@@ -182,7 +182,14 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public void OnDestroy()
         {
-            if (ARCoreExtensions._instance.currentARCoreSessionHandle != IntPtr.Zero &&
+            // On application quit / scene unload, ARCoreExtensions._instance may be destroyed
+            // before this component (Unity's OnDestroy order is undefined). Accessing
+            // currentARCoreSessionHandle on the already-destroyed singleton then throws a
+            // MissingReferenceException and logs "ARCore Extensions not found or not configured".
+            // When the instance is gone the native session (and its anchors) is already released,
+            // so it is safe to skip Detach/Release here.
+            if (ARCoreExtensions._instance != null &&
+                ARCoreExtensions._instance.currentARCoreSessionHandle != IntPtr.Zero &&
                 _anchorHandle != IntPtr.Zero)
             {
                 AnchorApi.Detach(
