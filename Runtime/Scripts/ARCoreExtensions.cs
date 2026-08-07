@@ -157,6 +157,42 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
+        /// Gets a value indicating whether the iOS cross platform ARCore session has been
+        /// created successfully. Always <c>true</c> on platforms other than iOS.
+        /// This property never triggers session creation.
+        /// </summary>
+        public static bool IsIOSCrossPlatformSessionCreated
+        {
+            get
+            {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+                return IOSSupportManager.IsSessionCreated;
+#else
+                return true;
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Attempts to create the iOS cross platform ARCore session if it does not exist
+        /// yet. The session is normally created only once per process when
+        /// <c><see cref="ARCoreExtensions"/></c> is first enabled and creation is never
+        /// retried on failure, which leaves Cloud Anchor operations permanently failing
+        /// with <c>ErrorInternal</c>; call this method to retry a failed creation.
+        /// Always returns <c>true</c> on platforms other than iOS.
+        /// </summary>
+        /// <returns>Whether the iOS cross platform ARCore session exists after the call.
+        /// </returns>
+        public static bool TryEnsureIOSCrossPlatformSession()
+        {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            return IOSSupportManager.Instance.RetryCreateSessionIfNeeded();
+#else
+            return true;
+#endif
+        }
+
+        /// <summary>
         /// Unity's Awake method.
         /// </summary>
         public void Awake()
