@@ -95,6 +95,40 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the cross platform ARCore session has been
+        /// created. Unlike <see cref="Instance"/>, this property never triggers session
+        /// creation.
+        /// </summary>
+        public static bool IsSessionCreated
+        {
+            get
+            {
+                return _instance != null && _instance._sessionHandle != IntPtr.Zero;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to create the cross platform ARCore session if it does not exist yet.
+        /// Session creation normally happens only once per process when
+        /// <see cref="Instance"/> is first accessed and is never retried on failure;
+        /// this method allows callers to retry a failed creation.
+        /// </summary>
+        /// <returns>Whether the cross platform ARCore session exists after the call.
+        /// </returns>
+        public bool RetryCreateSessionIfNeeded()
+        {
+#if UNITY_IOS && (!UNITY_EDITOR || UNITY_INCLUDE_TESTS)
+#if ARCORE_EXTENSIONS_IOS_SUPPORT
+            if (_sessionHandle == IntPtr.Zero)
+            {
+                CreateARCoreSession();
+            }
+#endif
+#endif
+            return _sessionHandle != IntPtr.Zero;
+        }
+
         public void SetEnabled(bool enabled)
         {
             _isEnabled = enabled;
