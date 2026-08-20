@@ -182,13 +182,16 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public void OnDestroy()
         {
-            // On application quit / scene unload, ARCoreExtensions._instance may be destroyed
-            // before this component (Unity's OnDestroy order is undefined). Accessing
-            // currentARCoreSessionHandle on the already-destroyed singleton then throws a
-            // MissingReferenceException and logs "ARCore Extensions not found or not configured".
-            // When the instance is gone the native session (and its anchors) is already released,
-            // so it is safe to skip Detach/Release here.
+            // On application quit / scene unload, ARCoreExtensions._instance or the ARSession
+            // it references may be destroyed before this component (Unity's OnDestroy order is
+            // undefined). Accessing currentARCoreSessionHandle then throws a
+            // MissingReferenceException or logs "ARCore Extensions not found or not configured"
+            // (the getter itself logs the error when Session is null, so Session must be checked
+            // before touching the getter). When the instance or session is gone the native
+            // session (and its anchors) is already released, so it is safe to skip
+            // Detach/Release here.
             if (ARCoreExtensions._instance != null &&
+                ARCoreExtensions._instance.Session != null &&
                 ARCoreExtensions._instance.currentARCoreSessionHandle != IntPtr.Zero &&
                 _anchorHandle != IntPtr.Zero)
             {
